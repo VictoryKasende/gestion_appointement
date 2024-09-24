@@ -1,0 +1,31 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block branding %}
+    <h1>Maintenance préventive (ITS)</h1>
+{% endblock %}
+
+{% block extrastyle %}
+
+    <style>
+        #header{
+
+        }
+        #branding h1{
+            color: white;
+            font-size: 1.5rem;
+            text-transform: capitalize;
+            font-weight: bold;
+        }
+        body{
+            background-color: #f6f6f9;
+        }
+        #content h1{
+            color: black;
+        }
+        table caption{
+            background-color: rgb(55, 82, 163);
+        }
+    </style>
+
+{% endblock %}
