@@ -1,10 +1,229 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impression Bulletin de Paie</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #2980b9;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #2980b9;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 16px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #2980b9;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            color: #555;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                margin: 1cm;
+            }
+
+            @page {
+                margin: 0;
+            }
+
+            .header, table {
+                width: 100%;
+            }
+
+            table {
+                box-shadow: none;
+                border-radius: 0;
+            }
+        }
+    </style>
 </head>
 <body>
+<!-- Header -->
+<div class="header">
+    <h1>MEDPARK CLINIC</h1>
+    <p>1283, Avenue KABULO Croisement Chemin Public QI KALUBWE CILUBUMBASHI</p>
+    <p>TEL 0974067678 / 1313305</p>
+    <p>RCCM MPS-15A-4351 A1815355C/5-3311314</p>
+    <p>Email: medpark2016@gmail.com</p>
+    <h2>DECOMPTE D'APPOINTEMENT DU TRAVAILLEUR</h2>
+    <p>MOIS DE {{ fiche.date_creation|date:"F Y"|upper }}</p>
+    <hr>
+    <p><strong>Identité:</strong>
+    <p>{{ fiche.employe.firstname|upper }} {{ fiche.employe.lastname|upper }}</p>
+    <p><strong>Classif légale:</strong> CC</p>
+    <p><strong>Matricule</strong> {{ fiche.employe.matricule }}</p>
+    <p><strong>Nature de l'emploi:</strong> AG</p>
+</div>
 
+
+<!-- Tableau des détails de la fiche de paie -->
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 16px;">
+    <thead>
+    <tr style="background-color: #2980b9; color: white;">
+        <th style="padding: 10px; text-align: left;">Détails</th>
+        <th style="padding: 10px; text-align: right;">Valeur</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Salaire et autres rémunérations -->
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Salaire de base</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.salaire_base|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Congés payés</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.conges_payes|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Jours de maladie</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.jour_maladie|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Heures supplémentaires</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.heures_supplementaires|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Jours fériés/Dimanches</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.jour_ferie_dimanche|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Prime d'intensité</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.prime_intensite|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Autres rémunérations</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.divers_remuneration|stringformat:"0.2f" }} $</td>
+    </tr>
+
+    <!-- Indemnités -->
+    <tr style="border-bottom: 1px solid #ddd; background-color: #f4f6f6;">
+        <td colspan="2" style="padding: 10px; font-weight: 600;">Indemnités</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Indemnité de logement</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.indemnites_logement|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Indemnité de transport</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.indemnites_transport|stringformat:"0.2f" }} $</td>
+    </tr>
+
+    <!-- Retenues -->
+    <tr style="border-bottom: 1px solid #ddd; background-color: #f4f6f6;">
+        <td colspan="2" style="padding: 10px; font-weight: 600;">Retenues</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Cotisation syndicale</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.cotisation_syndicale|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Autres retenues</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.autres_retenues|stringformat:"0.2f" }} $</td>
+    </tr>
+
+    <!-- Allocations familiales -->
+    <tr style="border-bottom: 1px solid #ddd; background-color: #f4f6f6;">
+        <td colspan="2" style="padding: 10px; font-weight: 600;">Allocations Familiales</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Nombre d'enfants</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.nombre_enfants }}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Taux d'allocation familiale</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.taux_allocation_familiale|stringformat:"0.2f" }} $</td>
+    </tr>
+
+    <!-- Totaux -->
+    <tr style="border-bottom: 1px solid #ddd; background-color: #f4f6f6;">
+        <td colspan="2" style="padding: 10px; font-weight: 600;">Totaux</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Total brut</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.total_brut|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Total des retenues</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.total_retenues|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Net à payer</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.net_a_payer|stringformat:"0.2f" }} $</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px;">Montant net</td>
+        <td style="padding: 10px; text-align: right;">{{ fiche.montant_net|stringformat:"0.2f" }} $</td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Trigger the print function -->
+<script type="text/javascript">
+    window.onload = function () {
+        window.print();
+    };
+</script>
 </body>
 </html>

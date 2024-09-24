@@ -1,10 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+{% load static %}
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <!-- My CSS -->
+    <link rel="stylesheet" href="{% static 'personnel/assets/css/style.css' %}">
+
+    <link href={% static "personnel/assets/images/logo.png" %} rel="icon">
+    <title>{% block title %}{% endblock title %}</title>
+
 </head>
 <body>
+{% include 'personnel/sliderbar.html' %}
+<section id="content">
+    {% include 'personnel/navbar.html' %}
+    <main>
+        <div class="head-title">
+            <div class="left">
+                <h1>{% block head_h1 %}{% endblock head_h1 %}</h1>
+                <ul class="breadcrumb">
+                    <li>
+                        <a href="#">Dashboard</a>
+                    </li>
+                    <li><i class='bx bx-chevron-right'></i></li>
+                    <li>
+                       {% block lien_head %}{% endblock lien_head %}
+                    </li>
+                </ul>
+            </div>
+        
+            {% block lien_droit %} {% endblock lien_droit %}
+            
+        </div>
+        
+        {% block content %}{% endblock content %}
+    </main>
+</section>
 
+<script src="{% static "personnel/assets/js/script.js" %}"></script>
 </body>
 </html>

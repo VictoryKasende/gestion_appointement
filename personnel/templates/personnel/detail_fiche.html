@@ -1,10 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Détails du Bulletin de Paie - Medpark Clinic{% endblock title %}
+{% block head_h1 %} Détails du Bulletin de Paie {% endblock head_h1 %}
+{% block lien_head %} <a class="active" href="{% url 'personnel:fichedepaie_detail' fiche.id %}">Détails Bulletin de Paie</a> {% endblock %}
 
-</body>
-</html>
+{% block content %}
+    <br>
+
+    <div class="form-container" style="max-width: 900px; margin: 0 auto; padding: 30px; border-radius: 15px; background-color: #ffffff; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);">
+        <h2 style="text-align: center; color: #2c3e50; font-weight: 600; margin-bottom: 20px;">Bulletin de Paie de {{ fiche.employe.username }}</h2>
+
+        <!-- Tableau des détails de la fiche de paie -->
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 16px;">
+            <thead>
+                <tr style="background-color: #2980b9; color: white;">
+                    <th style="padding: 10px; text-align: left;">Détails</th>
+                    <th style="padding: 10px; text-align: right;">Valeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Salaire et autres rémunérations -->
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Salaire de base</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.salaire_base|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Congés payés</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.conges_payes|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Jours de maladie</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.jour_maladie|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Heures supplémentaires</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.heures_supplementaires|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Jours fériés/Dimanches</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.jour_ferie_dimanche|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Prime d'intensité</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.prime_intensite|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Autres rémunérations</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.divers_remuneration|stringformat:"0.2f" }} $</td>
+                </tr>
+
+                <!-- Indemnités -->
+                <tr style="border-bottom: 1px solid #ddd; background-color: #f4f6f6;">
+                    <td colspan="2" style="padding: 10px; font-weight: 600;">Indemnités</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Indemnité de logement</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.indemnites_logement|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Indemnité de transport</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.indemnites_transport|stringformat:"0.2f" }} $</td>
+                </tr>
+
+                <!-- Retenues -->
+                <tr style="border-bottom: 1px solid #ddd; background-color: #f4f6f6;">
+                    <td colspan="2" style="padding: 10px; font-weight: 600;">Retenues</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Cotisation syndicale</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.cotisation_syndicale|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Autres retenues</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.autres_retenues|stringformat:"0.2f" }} $</td>
+                </tr>
+
+                <!-- Allocations familiales -->
+                <tr style="border-bottom: 1px solid #ddd; background-color: #f4f6f6;">
+                    <td colspan="2" style="padding: 10px; font-weight: 600;">Allocations Familiales</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Nombre d'enfants</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.nombre_enfants }}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Taux d'allocation familiale</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.taux_allocation_familiale|stringformat:"0.2f" }} $</td>
+                </tr>
+
+                <!-- Totaux -->
+                <tr style="border-bottom: 1px solid #ddd; background-color: #f4f6f6;">
+                    <td colspan="2" style="padding: 10px; font-weight: 600;">Totaux</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Total brut</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.total_brut|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Total des retenues</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.total_retenues|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Net à payer</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.net_a_payer|stringformat:"0.2f" }} $</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">Montant net</td>
+                    <td style="padding: 10px; text-align: right;">{{ fiche.montant_net|stringformat:"0.2f" }} $</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Bouton pour modifier -->
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="{% url 'personnel:modifier_fichedepaie' fiche.id %}">
+                <button style="background-color: #1ba1db; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: 500; transition: background-color 0.1s; width: 800px">
+                    Modifier
+                </button>
+            </a>
+        </div>
+    </div>
+{% endblock content %}

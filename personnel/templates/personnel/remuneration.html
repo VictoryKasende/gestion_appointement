@@ -1,10 +1,133 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Rémunération - Medpark Clinic{% endblock title %}
+{% block head_h1 %} Rémunération {% endblock head_h1 %}
+{% block lien_head %} <a class="active" href="#">Rémunération</a> {% endblock %}
+{% block lien_droit %}
+    <a href="{% url 'personnel:fichedepaie_add' %}" class="btn-download">
+        <i class='bx bx-file'></i>
+        <span class="text">Créer un contrat</span>
+    </a>
+{% endblock lien_droit %}
+{% block content %}
+    <div class="messages-container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message {{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    <ul class="box-info">
+        <!-- Total des agents -->
+        <li>
+            <i class='bx bxs-group'></i>
+            <span class="text">
+            <h3>{{ total_agents }}</h3>
+            <p>Total Agents</p>
+        </span>
+        </li>
 
-</body>
-</html>
+        <!-- Salaire moyen -->
+        <li>
+            <i class='bx bxs-dollar-circle'></i>
+            <span class="text">
+            <h3>${{ salaire_moyen }}</h3>
+            <p>Salaire Moyen</p>
+        </span>
+        </li>
+
+        <!-- Salaire total versé ce mois -->
+        <li>
+            <i class='bx bxs-wallet'></i>
+            <span class="text">
+            <h3>${{ total_salaires }}</h3>
+            <p>Total Salaires</p>
+        </span>
+        </li>
+
+        <!-- Bonus distribués ce mois -->
+        <li>
+            <i class='bx bxs-gift'></i>
+            <span class="text">
+            <h3>${{ total_bonus }}</h3>
+            <p>Total Bonus</p>
+        </span>
+        </li>
+    </ul>
+
+    <div class="table-data">
+        <div class="order">
+            <div class="head" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>Détails des Fiches de Paie</h3>
+
+                <!-- Formulaire de filtrage par mois -->
+                <form method="GET" action="" style="display: inline-flex; align-items: center;">
+                    {{ form.mois.label_tag }}
+                    {{ form.mois }}
+                    <button type="submit"
+                            style="background-color: var(--blue); border: none; padding: 5px 10px; color: white; cursor: pointer;">
+                        Filtrer
+                    </button>
+                </form>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Employé</th>
+                    <th>Matricule</th>
+                    <th>Nombre Heures/mois</th>
+                    <th>Nombres de jours</th>
+                    <th>Salaire de base/J</th>
+                    <th>Salaire de base retenu</th>
+                    <th>Logement</th>
+                    <th>Transport</th>
+                    <th>Salaire net</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for fiche in fiches_paie %}
+                    <tr>
+                        <td>
+                            {% if fiche.presence.agent.profile_photo %}
+                                <img src="{{ fiche.presence.agent.profile_photo.url }}" alt="Employé">
+                            {% else %}
+                                <img src="{% static 'personnel/assets/images/profil_defaut.png' %}" alt="Employé">
+                            {% endif %}
+                            <p>{{ fiche.presence.agent.username }}</p>
+                        </td>
+                        <td>{{ fiche.presence.agent.matricule }}</td>
+                        <td>{{ fiche.heures_travail|stringformat:"0.2f" }} heures</td>
+                        <td>{{ fiche.nombre_jours }} jours</td>
+                        <td>{{ fiche.presence.fiche_paie.salaire_base|stringformat:"0.2f" }}$</td>
+                        <td>{{ fiche.presence.fiche_paie.salaire_base_retenu|stringformat:"0.2f" }}$</td>
+                        <td>{{ fiche.presence.fiche_paie.indemnites_logement|stringformat:"0.2f" }}$</td>
+                        <td>{{ fiche.presence.fiche_paie.indemnites_transport|stringformat:"0.2f" }}$</td>
+                        <td>{{ fiche.presence.fiche_paie.net_a_payer|stringformat:"0.2f" }}$</td>
+                        <td>
+                            {% if fiche.presence.fiche_paie %}
+                                <a href="{% url 'personnel:fichedepaie_detail' fiche.presence.fiche_paie.id %}"
+                                   id="voir">
+                                    <button>Voir</button>
+                                </a>
+                                <a href="{% url 'personnel:modifier_fichedepaie' fiche.presence.fiche_paie.id %}">
+                                    <button style="background-color: var(--orange)">Modifier</button>
+                                </a>
+                                <a href="{% url 'personnel:print_fichedepaie' fiche.presence.fiche_paie.id %}">
+                                    <button style="background-color: var(--yellow)">Imprimer</button>
+                                </a>
+                            {% else %}
+                                <p>Aucune fiche de paie disponible</p>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock content %}

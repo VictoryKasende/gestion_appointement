@@ -1,10 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Demande - Medpark Clinic{% endblock title %}
+{% block head_h1 %} Demande de Crédit {% endblock head_h1 %}
+{% block lien_head %} <a class="active" href="#">Demande de Crédit</a> {% endblock %}
 
-</body>
-</html>
+{% block content %}
+    <div class="main-content">
+        <!-- FORMULAIRE DE DEMANDE -->
+        <div class="form-container">
+            <form action="" method="post">
+
+                <label for="montant">Montant Demandé</label>
+                <input type="number" id="montant" name="montant" step="0.01" required>
+
+                <label for="type_credit">Type de Crédit</label>
+                <select id="type_credit" name="type_credit" required>
+                    <option value="avance">Avance sur salaire</option>
+                    <option value="bonus">Bonus</option>
+                    <option value="prime">Prime</option>
+                    <option value="autre">Autre</option>
+                </select>
+
+                <label for="date">Date de Demande</label>
+                <input type="date" id="date" name="date" value="{{ today|date:'Y-m-d' }}" required>
+
+                <label for="comments">Commentaires</label>
+                <textarea id="comments" name="comments"></textarea>
+
+                <button type="submit" class="btn-submit">Soumettre Demande</button>
+            </form>
+        </div>
+
+
+        <!-- LISTE DES DEMANDES -->
+        <div class="requests-list">
+            <h3>Liste des Demandes</h3>
+            <table>
+                <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Montant Demandé</th>
+                    <th>Date de Demande</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Vivianne</td>
+                    <td>$20,000</td>
+                    <td>01-09-2024</td>
+                    <td><span class="status completed">Approuvé</span></td>
+                </tr>
+                <tr>
+                    <td>Deborah</td>
+                    <td>$15,000</td>
+                    <td>05-09-2024</td>
+                    <td><span class="status pending">En Attente</span></td>
+                </tr>
+                <tr>
+                    <td>Abi</td>
+                    <td>$30,000</td>
+                    <td>10-09-2024</td>
+                    <td><span class="status process">En Traitement</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock content %}

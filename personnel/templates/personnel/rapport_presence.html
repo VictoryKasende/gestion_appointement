@@ -1,10 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Rapport de Présence - Medpark Clinic{% endblock title %}
+{% block head_h1 %} Rapport de Présence{% endblock head_h1 %}
+{% block lien_head %} <a class="active" href="#">Rapport de Présence</a> {% endblock %}
 
-</body>
-</html>
+{% block content %}
+    <ul class="box-info">
+        <!-- Total des employés -->
+        <li>
+            <i class='bx bxs-group'></i>
+            <span class="text">
+                        <h3>120</h3> <!-- Exemple : nombre total d'employés -->
+                        <p>Total Employés</p>
+                    </span>
+        </li>
+
+        <!-- Présences ce mois -->
+        <li>
+            <i class='bx bxs-calendar-check'></i>
+            <span class="text">
+                        <h3>90%</h3> <!-- Exemple : taux de présence -->
+                        <p>Présence Moyenne</p>
+                    </span>
+        </li>
+
+        <!-- Absences ce mois -->
+        <li>
+            <i class='bx bxs-calendar-x'></i>
+            <span class="text">
+                <h3>10%</h3> <!-- Exemple : taux d'absences -->
+                <p>Absence Moyenne</p>
+            </span>
+        </li>
+    </ul>
+
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Détails de la Présence</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Employé</th>
+                    <th>Nombres de Jours</th>
+                    <th>Heures Travaillées</th>
+                    <th>Heures Supplémentaires</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <img src="{% static 'personnel/assets/images/profil_defaut.png' %}">
+                        <p>Deborah</p>
+                    </td>
+                    <td>20</td>
+                    <td>160</td>
+                    <td>5</td>
+                    <td>
+                        <button>Voir Détails</button>
+                        <button>Imprimer</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="{% static 'personnel/assets/images/profil_defaut.png' %}">
+                        <p>VIvianne</p>
+                    </td>
+                    <td>18</td>
+                    <td>140</td>
+                    <td>2</td>
+                    <td>
+                        <button>Voir Détails</button>
+                        <button>Imprimer</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="{% static 'personnel/assets/images/profil_defaut.png' %}">
+                        <p>Michael</p>
+                    </td>
+                    <td>21</td>
+                    <td>168</td>
+                    <td>0</td>
+                    <td>
+                        <button>Voir Détails</button>
+                        <button>Imprimer</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock content %}

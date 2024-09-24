@@ -1,66 +1,49 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
-{% block navbar %}{% include 'navbar_sans_alerte.html' %}{% endblock navbar %}
+{% block title %} Profil Utilisateur - Medpark Clinic{% endblock title %}
+{% block head_h1 %} Profil Utilisateur {% endblock head_h1 %}
+{% block lien_head %} <a class="active" href="#">Profil Utilisateur</a> {% endblock %}
+
 {% block content %}
-    <div class="container mt-4">
-        <!-- Bande pour les messages -->
-        {% if messages %}
-            <div class="alert-container">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                {% endfor %}
+    <div class="main-content">
+        <!-- FICHE DE PROFIL -->
+        <div class="profile-container">
+            <h3>Informations du Profil</h3>
+            <div class="profile-header">
+                <img src="{% static 'personnel/assets/images/profil_defaut.png' %}" alt="Photo de Profil"
+                     class="profile-pic">
+                <div class="profile-info">
+                    <h4>Vivianne</h4>
+                    <p>Agent</p>
+                    <p>Matricule : UB300</p>
+                </div>
             </div>
-        {% endif %}
-
-        <div class="profile-header text-center">
-            {% if user.profile_photo %}
-                <img src="{{ user.profile_photo.url }}" alt="Photo de Profil" class="profile-photo mb-3">
-            {% else %}
-                <img src="{% static 'prevention/assets/images/profil_defaut.png' %}" alt="Photo de Profil" class="profile-photo mb-3">
-            {% endif %}
+            <table class="profile-details">
+                <thead>
+                <tr>
+                    <th colspan="2">Détails du Profil</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Email:</td>
+                    <td>umbalo@gmail.com</td>
+                </tr>
+                <tr>
+                    <td>Téléphone:</td>
+                    <td>998554044</td>
+                </tr>
+                <tr>
+                    <td>Adresse:</td>
+                    <td>123 du Carmel, 300</td>
+                </tr>
+                <tr>
+                    <td>Date d'Embauche:</td>
+                    <td>01-09-2024</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="profile-content">
-            <form method="post" id="formProfil" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label for="{{ form.first_name.id_for_label }}">Nom</label>
-                        {{ form.first_name }}
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label for="{{ form.email.id_for_label }}">Email</label>
-                        {{ form.email }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label for="{{ form.telephone.id_for_label }}">Téléphone</label>
-                        {{ form.telephone }}
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label for="{{ form.genre.id_for_label }}">Genre</label>
-                        {{ form.genre }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        <label for="{{ form.profile_photo.id_for_label }}">Photo de Profil</label>
-                        {{ form.profile_photo }}
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary w-100" style="background-color: rgb(55, 82, 163);"
-                        onmouseover="this.style.backgroundColor='#4a68ad';"
-                        onmouseout="this.style.backgroundColor='rgb(55, 82, 163);'">Enregistrer les
-                    modifications
-                </button>
-            </form>
-        </div>
+        <!-- FICHE DE PROFIL -->
     </div>
-
-    {% include 'prevention/alerte.html' %}
 {% endblock content %}

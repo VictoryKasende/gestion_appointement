@@ -1,10 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Fiche de Paie - Medpark Clinic{% endblock title %}
+{% block head_h1 %} Bulletin de Paie {% endblock head_h1 %}
+{% block lien_head %} <a class="active" href="#">Bulletin de Paie</a> {% endblock %}
 
-</body>
-</html>
+{% block content %}
+    <br>
+    <div class="form-container">
+        <form action="{% url 'personnel:fichedepaie_add' %}" method="POST">
+            {% csrf_token %}
+
+            <!-- Employé -->
+            <label for="employe">Employé :</label>
+            <select name="employe" id="employe"
+                    style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--grey); font-size: 14px; background-color: white">
+                {% for employe in employes %}
+                    <option value="{{ employe.id }}">{{ employe.username }}</option>
+                {% endfor %}
+            </select>
+
+
+            <!-- Remuneration -->
+            <h3>Rémunération:</h3>
+            <!-- Salaire de base -->
+            <label for="salaire_base">Salaire de base :</label>
+            <input type="number" step="0.01" name="salaire_base" id="salaire_base" required>
+
+            <!-- Congés payés -->
+            <label for="conges_payes">Congés payés :</label>
+            <input type="number" step="0.01" name="conges_payes" id="conges_payes" required>
+
+            <!-- Jours de maladie -->
+            <label for="jour_maladie">Jours de maladie :</label>
+            <input type="number" step="0.01" name="jour_maladie" id="jour_maladie">
+
+            <!-- Heures supplémentaires -->
+            <label for="heures_supplementaires">Heures supplémentaires :</label>
+            <input type="number" step="0.01" name="heures_supplementaires" id="heures_supplementaires">
+
+            <!-- Jours fériés/Dimanches -->
+            <label for="jour_ferie_dimanche">Jours fériés/Dimanches :</label>
+            <input type="number" step="0.01" name="jour_ferie_dimanche" id="jour_ferie_dimanche">
+
+            <!-- Prime d'intensité -->
+            <label for="prime_intensite">Prime d'intensité :</label>
+            <input type="number" step="0.01" name="prime_intensite" id="prime_intensite">
+
+            <!-- Autres rémunérations -->
+            <label for="divers_remuneration">Autres rémunérations :</label>
+            <input type="number" step="0.01" name="divers_remuneration" id="divers_remuneration">
+
+            <!-- Indemnités -->
+            <h3>Indemnités :</h3>
+            <label for="indemnites_logement">Indemnité de logement :</label>
+            <input type="number" step="0.01" name="indemnites_logement" id="indemnites_logement">
+
+            <label for="indemnites_transport">Indemnité de transport :</label>
+            <input type="number" step="0.01" name="indemnites_transport" id="indemnites_transport">
+
+            <label for="cotisation_syndicale">Cotisation syndicale :</label>
+            <input type="number" step="0.01" name="cotisation_syndicale" id="cotisation_syndicale">
+
+            <label for="autres_retenues">Autres retenues :</label>
+            <input type="number" step="0.01" name="autres_retenues" id="autres_retenues">
+
+            <!-- Allocations familiales -->
+            <h3>Allocations Familiales :</h3>
+            <label for="nombre_enfants">Nombre d'enfants :</label>
+            <input type="number" name="nombre_enfants" id="nombre_enfants">
+
+            <label for="taux_allocation_familiale">Taux allocation familiale :</label>
+            <input type="number" step="0.01" name="taux_allocation_familiale" id="taux_allocation_familiale">
+
+            <!-- Bouton de soumission -->
+            <button type="submit">Valider le bulletin de paie</button>
+        </form>
+    </div>
+{% endblock content %}

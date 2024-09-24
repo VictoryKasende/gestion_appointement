@@ -1,10 +1,116 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Traiter Demande - Medpark Clinic{% endblock title %}
+{% block head_h1 %} Traiter Demande de Crédit {% endblock head_h1 %}
+{% block lien_head %} <a class="active" href="#">Traiter Demande de Crédit</a> {% endblock %}
 
-</body>
-</html>
+{% block content %}
+    <ul class="box-info">
+                <!-- Total des demandes -->
+                <li>
+                    <i class='bx bxs-file-plus'></i>
+                    <span class="text">
+                        <h3>120</h3> <!-- Exemple : nombre total de demandes -->
+                        <p>Total Demandes</p>
+                    </span>
+                </li>
+
+                <!-- Montant total demandé -->
+                <li>
+                    <i class='bx bxs-dollar-circle'></i>
+                    <span class="text">
+                        <h3>$500,000</h3> <!-- Exemple : montant total demandé -->
+                        <p>Montant Total</p>
+                    </span>
+                </li>
+
+                <!-- Montant approuvé -->
+                <li>
+                    <i class='bx bxs-check-circle'></i>
+                    <span class="text">
+                        <h3>$350,000</h3> <!-- Exemple : montant approuvé -->
+                        <p>Montant Approuvé</p>
+                    </span>
+                </li>
+
+                <!-- Montant refusé -->
+                <li>
+                    <i class='bx bxs-x-circle'></i>
+                    <span class="text">
+                        <h3>$150,000</h3> <!-- Exemple : montant refusé -->
+                        <p>Montant Refusé</p>
+                    </span>
+                </li>
+            </ul>
+
+            <div class="table-data">
+                <div class="order">
+                    <div class="head">
+                        <h3>Détails des Demandes</h3>
+                        <i class='bx bx-search'></i>
+                        <i class='bx bx-filter'></i>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Montant Demandé</th>
+                                <th>Date de Demande</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <img src="{% static 'personnel/assets/images/profil_defaut.png' %}">
+                                    <p>Victoire</p>
+                                </td>
+                                <td>$20,000</td>
+                                <td>01-09-2024</td>
+                                <td>
+                                    <span class="status completed">Approuvé</span>
+                                </td>
+                                <td>
+                                    <button>Voir Détail</button>
+                                    <button>Approuvé</button>
+                                    <button>Refusé</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="{% static 'personnel/assets/images/profil_defaut.png' %}">
+                                    <p>Vivianne</p>
+                                </td>
+                                <td>$15,000</td>
+                                <td>05-09-2024</td>
+                                <td>
+                                    <span class="status pending">En Attente</span>
+                                </td>
+                                <td>
+                                    <button>Voir Détail</button>
+                                    <button>Approuvé</button>
+                                    <button>Refusé</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="{% static 'personnel/assets/images/profil_defaut.png' %}">
+                                    <p>Michael</p>
+                                </td>
+                                <td>$30,000</td>
+                                <td>10-09-2024</td>
+                                <td>
+                                    <span class="status process">En Traitement</span>
+                                </td>
+                                <td>
+                                    <button>Voir Détail</button>
+                                    <button>Approuvé</button>
+                                    <button>Refusé</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+{% endblock content %}

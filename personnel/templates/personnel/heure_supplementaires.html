@@ -1,10 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Heure Supplementaire - Medpark Clinic{% endblock title %}
+{% block head_h1 %} Heures Supplémentaires{% endblock head_h1 %}
+{% block lien_head %} <a class="active" href="#">Heures Supplémentaires</a> {% endblock %}
 
-</body>
-</html>
+{% block content %}
+    <div class="main-content">
+        <!-- FORMULAIRE D'HEURES SUPPLÉMENTAIRES -->
+        <div class="form-container">
+            <form action="#" method="post">
+
+                <label for="hours-worked">Heures Travaillées</label>
+                <input type="number" id="hours-worked" name="hours-worked" required>
+
+                <label for="reason">Motif</label>
+                <textarea id="reason" name="reason"></textarea>
+                <button type="submit" class="btn-submit">Ajouter</button>
+            </form>
+        </div>
+
+        <!-- LISTE DES HEURES SUPPLÉMENTAIRES -->
+        <div class="requests-list">
+            <h3>Liste des Heures Supplémentaires</h3>
+            <table>
+                <thead>
+                <tr>
+                    <th>Heures Travaillées</th>
+                    <th>Date</th>
+                    <th>Motif</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>5</td>
+                    <td>01-09-2024</td>
+                    <td>Travail supplémentaire pour projet X</td>
+                    <td>
+                        <a href="edit-overtime.html" class="btn-edit">Modifier</a>
+                        <a href="#" class="btn-delete">Supprimer</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>05-09-2024</td>
+                    <td>Heures supplémentaires pour réunion</td>
+                    <td>
+                        <a href="edit-overtime.html" class="btn-edit">Modifier</a>
+                        <a href="#" class="btn-delete">Supprimer</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>10-09-2024</td>
+                    <td>Heures de nuit pour maintenance</td>
+                    <td>
+                        <a href="edit-overtime.html" class="btn-edit">Modifier</a>
+                        <a href="#" class="btn-delete">Supprimer</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock content %}

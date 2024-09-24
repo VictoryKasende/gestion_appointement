@@ -1,10 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% load static %}
+<!-- NAVBAR -->
+<nav>
+    <i class='bx bx-menu'></i>
+    <form action="#">
+        <div class="form-input">
+            <input type="search" placeholder="Rechercher...">
+            <button type="submit" class="search-btn"><i class='bx bx-search'></i></button>
+        </div>
+    </form>
+    <input type="checkbox" id="switch-mode" hidden>
+    <label for="switch-mode" class="switch-mode"></label>
+    <a href="#" class="notification">
+        <i class='bx bxs-bell'></i>
+        <span class="num">8</span>
+    </a>
+    <a href="#" class="profile">
+        <img  src="{% static 'personnel/assets/images/profil_defaut.png' %}">
+    </a>
+</nav>
+<!-- NAVBAR -->

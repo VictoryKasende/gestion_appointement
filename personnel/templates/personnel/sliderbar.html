@@ -6,31 +6,37 @@
     </a>
     <ul class="side-menu top">
         <li class="active">
-            <a href="#">
+            <a href="{% url 'personnel:remuneration' %}">
                 <i class='bx bxs-wallet'></i>
                 <span class="text">Rémuneration</span>
             </a>
         </li>
         <li>
-            <a href="demande_credit.html">
+            <a href="{% url 'personnel:demande_credit' %}">
                 <i class='bx bxs-file-plus'></i>
                 <span class="text">Demande</span>
             </a>
         </li>
         <li>
-            <a href="traiter_demande.html">
+            <a href="{% url 'personnel:traiter_demande_credit' %}">
                 <i class='bx bxs-edit-alt'></i>
                 <span class="text">Traiter demande</span>
             </a>
         </li>
         <li>
-            <a href="#">
+            <a href="{% url 'personnel:presence' %}">
+                <i class='bx bxs-check-circle'></i>
+                <span class="text">Présence</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'personnel:heure_supplementaire' %}">
                 <i class='bx bxs-time-five'></i>
                 <span class="text">Heure Supplementaire</span>
             </a>
         </li>
         <li>
-            <a href="#">
+            <a href="{% url 'personnel:rapport_presences' %}">
                 <i class='bx bxs-calendar-check'></i>
                 <span class="text">Rapport Présence</span>
             </a>
@@ -38,13 +44,13 @@
     </ul>
     <ul class="side-menu">
         <li>
-            <a href="#">
+            <a href="{% url 'authentication:profil' %}">
                 <i class='bx bxs-user-circle'></i>
                 <span class="text">Profil</span>
             </a>
         </li>
         <li>
-            <a href="#" class="logout">
+            <a href="/logout/" class="logout">
                 <i class='bx bxs-log-out-circle'></i>
                 <span class="text">Logout</span>
             </a>
