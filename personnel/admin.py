@@ -19,7 +19,7 @@ class FichePaieAdmin(admin.ModelAdmin):
 
 @admin.register(Presence)
 class PresenceAdmin(admin.ModelAdmin):
-    list_display = ('agent', 'date', 'heure_arrivee', 'heure_depart', 'heures_travail')
+    list_display = ('agent', 'date', 'heure_arrivee', 'heure_depart', 'heures_travail', 'statut')
     search_fields = ('agent__username',)
     list_filter = ('date',)
     date_hierarchy = 'date'

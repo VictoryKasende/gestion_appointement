@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from datetime import datetime, time
+from django.utils.timezone import make_aware
 import calendar
 from django.utils import timezone
 
@@ -15,10 +16,19 @@ class Credit(models.Model):
         ('autre', 'Autre'),
     ]
 
+    STATUT_CREDIT_CHOICES = [
+        ('en_attente', 'En attente'),
+        ('approuve', 'Approuvé'),
+        ('rejete', 'Rejeté'),
+    ]
+
     agent = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
     montant = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField(auto_now_add=True)
     type_credit = models.CharField(max_length=50, choices=TYPE_CREDIT_CHOICES, default='autre')
+    statut = models.CharField(max_length=20, choices=STATUT_CREDIT_CHOICES,
+                              default='en_attente')  # Ajout du champ statut
+    commentaire = models.TextField(blank=True, null=True)  # Ajout du champ commentaire
 
     def __str__(self):
         return f"Crédit de {self.montant} pour {self.agent.username} le {self.date} ({self.get_type_credit_display()})"
@@ -72,39 +82,72 @@ class FichePaie(models.Model):
 
 
 class Presence(models.Model):
+
+    # Choix possibles pour le statut de présence
+    STATUT_CHOICES = [
+        ('P', 'Présent'),
+        ('A', 'Absent'),
+    ]
     agent = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)  # L'agent concerné par la présence
     fiche_paie = models.ForeignKey(FichePaie, on_delete=models.SET_NULL, null=True,
                                    blank=True)  # Référence à la fiche de paie, peut être vide
-    date = models.DateField(auto_now_add=True)  # Date de la présence
-    heure_arrivee = models.TimeField()  # Heure d'arrivée de l'agent
-    heure_depart = models.TimeField()  # Heure de départ de l'agent
+    date = models.DateField()  # Date de la présence
+    heure_arrivee = models.TimeField(blank=True, null=True)  # Heure d'arrivée de l'agent
+    heure_depart = models.TimeField(blank=True, null=True)  # Heure de départ de l'agent
     heures_travail = models.DecimalField(max_digits=5, decimal_places=2, null=True,
                                          blank=True)  # Calcul des heures de travail (facultatif)
+    statut = models.CharField(max_length=1, choices=STATUT_CHOICES, default='A')  # Champ statut (Présent ou Absent)
 
     def clean(self):
         # Définir les plages d'heures valides
-        plage_arrivee_min = time(8, 0)  # 08:00
-        plage_arrivee_max = time(8, 30)  # 08:30
-        plage_depart_min = time(16, 0)  # 16:00
-        plage_depart_max = time(16, 30)  # 16:30
+        # plage_arrivee_min = time(8, 0)  # 08:00
+        # plage_arrivee_max = time(8, 30)  # 08:30
+        # plage_depart_min = time(16, 0)  # 16:00
+        # plage_depart_max = time(16, 30)  # 16:30
+        #
+        # # Vérifier que les champs ne sont pas vides
+        # if self.heure_arrivee is None:
+        #     raise ValidationError("L'heure d'arrivée est obligatoire.")
+        # if self.heure_depart is None:
+        #     raise ValidationError("L'heure de départ est obligatoire.")
+        #
+        # # Validation de l'heure d'arrivée
+        # if not (plage_arrivee_min <= self.heure_arrivee <= plage_arrivee_max):
+        #     raise ValidationError("L'heure d'arrivée doit être comprise entre 08h00 et 08h30.")
+        #
+        # # Validation de l'heure de départ
+        # if not (plage_depart_min <= self.heure_depart <= plage_depart_max):
+        #     raise ValidationError("L'heure de départ doit être comprise entre 16h00 et 16h30.")
 
-        # Vérifier que les champs ne sont pas vides
-        if self.heure_arrivee is None:
-            raise ValidationError("L'heure d'arrivée est obligatoire.")
-        if self.heure_depart is None:
-            raise ValidationError("L'heure de départ est obligatoire.")
-
-        # Validation de l'heure d'arrivée
-        if not (plage_arrivee_min <= self.heure_arrivee <= plage_arrivee_max):
-            raise ValidationError("L'heure d'arrivée doit être comprise entre 08h00 et 08h30.")
-
-        # Validation de l'heure de départ
-        if not (plage_depart_min <= self.heure_depart <= plage_depart_max):
-            raise ValidationError("L'heure de départ doit être comprise entre 16h00 et 16h30.")
+        # Si l'agent est marqué comme 'Présent', l'heure d'arrivée et l'heure de départ sont obligatoires
+        if self.statut == 'P':
+            if not self.heure_arrivee or not self.heure_depart:
+                raise ValidationError("L'heure d'arrivée et de départ sont obligatoires pour un statut 'Présent'.")
 
         # Validation pour s'assurer que l'heure de départ est après l'heure d'arrivée
         if self.heure_depart <= self.heure_arrivee:
             raise ValidationError("L'heure de départ doit être après l'heure d'arrivée.")
+
+    def save(self, *args, **kwargs):
+        # Calcul automatique des heures de travail
+        if self.heure_arrivee and self.heure_depart:
+            # Convertir les heures en objets datetime pour effectuer le calcul
+            arrivee = datetime.combine(self.date, self.heure_arrivee)
+            depart = datetime.combine(self.date, self.heure_depart)
+
+            # S'assurer que les objets datetime sont "aware" (si vous gérez des fuseaux horaires)
+            arrivee = make_aware(arrivee)
+            depart = make_aware(depart)
+
+            # Calculer la différence entre l'heure d'arrivée et de départ
+            delta = depart - arrivee
+            heures_travail = delta.total_seconds() / 3600  # Convertir en heures
+
+            # Arrondir à deux décimales et assigner au champ `heures_travail`
+            self.heures_travail = round(heures_travail, 2)
+
+        # Appeler la méthode save() parent
+        super(Presence, self).save(*args, **kwargs)
 
     def calcul_heures_travail(self):
         """
@@ -197,6 +240,7 @@ class HeureSupplementaire(models.Model):
                                    blank=True)  # Référence à la fiche de paie associée
     nombre_heures = models.DecimalField(max_digits=5, decimal_places=2)  # Nombre d'heures supplémentaires effectuées
     date = models.DateField(auto_now_add=True)  # Date à laquelle les heures supplémentaires ont été effectuées
+    motif = models.TextField(null=True, blank=True)  # Motif des heures supplémentaires (peut être vide)
 
     def __str__(self):
         return f"{self.nombre_heures} heures supplémentaires pour {self.agent.username} le {self.date}"

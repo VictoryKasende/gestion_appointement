@@ -1,6 +1,8 @@
 # forms.py
 from django import forms
 
+from personnel.models import HeureSupplementaire
+
 
 class MoisFiltreForm(forms.Form):
     MOIS_CHOICES = [
@@ -20,3 +22,9 @@ class MoisFiltreForm(forms.Form):
     ]
 
     mois = forms.ChoiceField(choices=MOIS_CHOICES, required=False, label='Filtrer par mois')
+
+
+class HeureSupplementaireForm(forms.ModelForm):
+    class Meta:
+        model = HeureSupplementaire
+        fields = ['nombre_heures', 'motif']

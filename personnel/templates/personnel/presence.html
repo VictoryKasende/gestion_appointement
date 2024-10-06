@@ -6,12 +6,12 @@
 
 {% block content %}
     <div class="main-content">
-    <div class="presence-container" style="width: 1200px;">
-        <h3>Liste des Présences</h3>
-        <div class="table-data">
-            <div class="order">
-                <table>
-                    <thead>
+        <div class="presence-container" style="width: 1200px;">
+            <h3>Liste des Présences</h3>
+            <div class="table-data">
+                <div class="order">
+                    <table>
+                        <thead>
                         <tr>
                             <th>Employé</th>
                             <th>Date</th>
@@ -20,46 +20,40 @@
                             <th>Heures Travaillées</th>
                             <th>Statut</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <img src="{% static 'personnel/assets/images/profil_defaut.png' %}" alt="Photo de Profil" class="profile-pic">
-                                <p>John</p>
-                            </td>
-                            <td>01-09-2024</td>
-                            <td>08:00</td>
-                            <td>16:00</td>
-                            <td>8.00</td>
-                            <td><span class="status present">Présent</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <img src="{% static 'personnel/assets/images/profil_defaut.png' %}" alt="Photo de Profil" class="profile-pic">
-                                <p>Deborah</p>
-                            </td>
-                            <td>02-09-2024</td>
-                            <td>09:00</td>
-                            <td>--</td>
-                            <td>8.00</td>
-                            <td><span class="status absent">Absent</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <img src="{% static 'personnel/assets/images/profil_defaut.png' %}" alt="Photo de Profil" class="profile-pic">
-                                <p>Michael</p>
-                            </td>
-                            <td>03-09-2024</td>
-                            <td>08:30</td>
-                            <td>16:30</td>
-                            <td>8.00</td>
-                            <td><span class="status present">Présent</span></td>
-                        </tr>
-
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        {% for presence in user_presences %}
+                            <tr>
+                                <td>
+                                    {% if presence.agent.profile_photo %}
+                                        <img src="{{ presence.agent.profile_photo.url }}" alt="Employé">
+                                    {% else %}
+                                        <img src="{% static 'personnel/assets/images/profil_defaut.png' %}"
+                                             alt="Employé">
+                                    {% endif %}
+                                    <p>{{ presence.agent.username }} {{ presence.agent.firstname }}</p>
+                                </td>
+                                <td>{{ presence.date|date:"d-m-Y" }}</td>
+                                <td>{{ presence.heure_arrivee|default:"--" }}</td>
+                                <td>{{ presence.heure_depart|default:"--" }}</td>
+                                <td>{{ presence.heures_travail|default:"0.00" }}</td>
+                                <td>
+                                    {% if presence.statut == 'P' %}
+                                        <span class="status present">Présent</span>
+                                    {% else %}
+                                        <span class="status absent">Absent</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">Aucune présence enregistrée.</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock content %}

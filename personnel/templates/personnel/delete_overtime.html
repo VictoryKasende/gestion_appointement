@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Supprimer Heure Supplémentaire - Medpark Clinic{% endblock title %}
+{% block head_h1 %}Supprimer Heure Supplémentaire{% endblock head_h1 %}
+{% block lien_head %}
+    <a href="{% url 'personnel:heure_supplementaire' %}">Retour aux Heures Supplémentaires</a> {% endblock %}
+
+{% block content %}
+    <style>
+        .main-content {
+            padding: 20px;
+            background-color: #f9f9f9; /* Fond léger pour une meilleure lisibilité */
+            border-radius: 5px; /* Coins arrondis */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Ombre douce */
+        }
+
+        .confirmation-box {
+            padding: 20px;
+            border: 1px solid #e6e6e6; /* Bordure légère */
+            border-radius: 5px; /* Coins arrondis */
+            background-color: #fff; /* Fond blanc pour le texte */
+        }
+
+        h3 {
+            color: #d9534f; /* Couleur rouge pour le titre */
+        }
+
+        p {
+            font-size: 1.1em; /* Taille de police légèrement augmentée */
+            margin: 15px 0; /* Espacement autour du texte */
+        }
+
+        strong {
+            color: #333; /* Couleur pour le texte important */
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between; /* Espacement entre les boutons */
+        }
+
+        .btn-delete {
+            background-color: #d9534f; /* Couleur rouge pour le bouton de suppression */
+            color: #fff; /* Texte blanc */
+            padding: 10px 15px; /* Espacement interne */
+            border: none; /* Pas de bordure */
+            border-radius: 5px; /* Coins arrondis */
+            cursor: pointer; /* Curseur pointer pour indiquer un clic */
+            transition: background-color 0.3s ease; /* Transition douce pour le survol */
+        }
+
+        .btn-delete:hover {
+            background-color: #c9302c; /* Couleur plus foncée au survol */
+        }
+
+        .btn-cancel {
+            background-color: #f0ad4e; /* Couleur orange pour le bouton d'annulation */
+            color: #fff; /* Texte blanc */
+            padding: 10px 15px; /* Espacement interne */
+            border: none; /* Pas de bordure */
+            border-radius: 5px; /* Coins arrondis */
+            cursor: pointer; /* Curseur pointer pour indiquer un clic */
+            transition: background-color 0.3s ease; /* Transition douce pour le survol */
+        }
+
+        .btn-cancel:hover {
+            background-color: #ec971f; /* Couleur plus foncée au survol */
+        }
+
+    </style>
+    <div class="messages-container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message {{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    <div class="main-content">
+        <div class="confirmation-box">
+            <h3>Confirmer la suppression</h3>
+            <p>Êtes-vous sûr de vouloir supprimer l'enregistrement de <strong>{{ heure_supp.nombre_heures }}</strong>
+                heures supplémentaires effectuées le <strong>{{ heure_supp.date|date:"d-m-Y" }}</strong> ?</p>
+
+            <form action="{% url 'personnel:delete_overtime' heure_supp.id %}" method="post">
+                {% csrf_token %}
+                <div class="button-group">
+                    <button type="submit" class="btn-delete">Confirmer la suppression</button>
+                    <a href="{% url 'personnel:heure_supplementaire' %}" class="btn-cancel">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,75 +1,87 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Avg, Sum
+from django.db.models import Avg, Sum, Count, Q
 from datetime import date
 from django.contrib import messages
 from decimal import Decimal
 from django.utils import timezone
 import calendar
+from django.utils.timezone import now
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 from .models import Utilisateur, FichePaie, Credit, HeureSupplementaire, Presence
-from .forms import MoisFiltreForm
+from .forms import MoisFiltreForm, HeureSupplementaireForm
 
-# Obtenir la date actuelle
-now = timezone.now()
+MANAGER = 'Manager'
+ADMINISTRATEUR_IT = 'Administrateur IT'
+GESTIONNAIRE_PAIE = 'Gestionnaire Paie'
+AGENT = 'Agent'
 
 
+def is_gestionnaire(user):
+    return user.role == GESTIONNAIRE_PAIE
+
+
+def is_agent(user):
+    return user.role == AGENT
+
+
+def is_manager(user):
+    return user.role == MANAGER
+
+
+@login_required
+@user_passes_test(is_gestionnaire)
 def remuneration(request):
-    # Nombre total d'agents
-    total_agents = Utilisateur.objects.filter(role=Utilisateur.AGENT).count()
-
-    # Salaire moyen des agents (basé sur les fiches de paie)
-    salaire_moyen = FichePaie.objects.aggregate(Avg('salaire_base'))['salaire_base__avg'] or 0
-
-    # Obtenir le mois et l'année courants
+    # Obtenir la date actuelle
     aujourdhui = date.today()
     mois_courant = aujourdhui.month
     annee_courante = aujourdhui.year
 
-    # Calculer le total des salaires versés ce mois-ci
-    total_salaires = FichePaie.objects.filter(date_creation__year=annee_courante, date_creation__month=mois_courant).aggregate(
-        Sum('net_a_payer'))['net_a_payer__sum'] or 0
-
-    # Total des bonus distribués ce mois
-    premier_jour_mois = date(annee_courante, mois_courant, 1)
-    total_bonus = Credit.objects.filter(type_credit='bonus', date__gte=premier_jour_mois).aggregate(Sum('montant'))[
-                      'montant__sum'] or 0
-
-    # Filtrer les présences pour le mois et l'année en cours
-    presences = Presence.objects.filter(date__year=annee_courante, date__month=mois_courant).select_related('agent')
-
-    # Gérer le filtrage par mois
+    # Gérer le filtrage par mois via GET
     if request.method == 'GET':
         form = MoisFiltreForm(request.GET)
         if form.is_valid():
             mois = form.cleaned_data.get('mois')
             if mois:
-                presences = Presence.objects.filter(date__month=int(mois)).select_related(
-                    'agent')
+                mois_courant = int(mois)  # Remplace le mois courant par celui sélectionné
+        else:
+            form = MoisFiltreForm()
     else:
         form = MoisFiltreForm()
 
-    # Créer un dictionnaire pour éviter les doublons par agent
-    fiches_paie_dict = {}
+    # Nombre total d'agents
+    total_agents = Utilisateur.objects.filter(role=Utilisateur.AGENT).count()
 
-    for presence in presences:
-        agent_id = presence.agent.id
+    # Salaire moyen des agents pour le mois sélectionné
+    salaire_moyen = FichePaie.objects.filter(
+        date_creation__year=annee_courante,
+        date_creation__month=mois_courant
+    ).aggregate(Avg('salaire_base'))['salaire_base__avg'] or 0
 
-        # Vérifie si l'agent est déjà traité
-        if agent_id not in fiches_paie_dict:
-            # Appel des méthodes de classe avec l'agent en paramètre
-            heures_travail = Presence.total_heures_travail_mois_courant(presence.agent)  # Méthode de classe
-            nombre_jours = Presence.nombre_de_presences_mois_courant(presence.agent)  # Méthode de classe
-            print(presence.fiche_paie)
-            # Stocke les données de la fiche de paie dans un dictionnaire pour éviter les doublons
-            fiches_paie_dict[agent_id] = {
-                'presence': presence,
-                'heures_travail': heures_travail,
-                'nombre_jours': nombre_jours,
-            }
+    # Calculer le total des salaires versés pour le mois sélectionné
+    total_salaires = FichePaie.objects.filter(
+        date_creation__year=annee_courante,
+        date_creation__month=mois_courant
+    ).aggregate(Sum('net_a_payer'))['net_a_payer__sum'] or 0
 
-    # Convertir le dictionnaire en liste pour le contexte
-    fiches_paie = list(fiches_paie_dict.values())
+    # Total des bonus distribués pour le mois sélectionné
+    premier_jour_mois = date(annee_courante, mois_courant, 1)
+    total_bonus = Credit.objects.filter(
+        type_credit='bonus',
+        date__gte=premier_jour_mois
+    ).aggregate(Sum('montant'))['montant__sum'] or 0
 
+    # Filtrer les fiches de paie du mois sélectionné et récupérer les informations des présences via annotations
+    fiches_paie = FichePaie.objects.filter(
+        date_creation__year=annee_courante,
+        date_creation__month=mois_courant
+    ).select_related('employe').annotate(
+        heures_travail=Sum('employe__presence__heures_travail', filter=Q(employe__presence__date__month=mois_courant)),
+        nombre_jours=Count('employe__presence__id', filter=Q(employe__presence__date__month=mois_courant))
+    )
 
     # Contexte pour passer à la vue
     context = {
@@ -80,9 +92,12 @@ def remuneration(request):
         'total_bonus': round(total_bonus, 2),
         'form': form
     }
+
     return render(request, 'personnel/remuneration.html', context)
 
 
+@login_required
+@user_passes_test(is_gestionnaire)
 def fichedepaie_add(request):
     if request.method == 'POST':
         employe_id = request.POST.get('employe')
@@ -109,8 +124,8 @@ def fichedepaie_add(request):
         employe = get_object_or_404(Utilisateur, id=employe_id)
 
         # Premier et dernier jour du mois en cours
-        first_day_of_month = now.replace(day=1)
-        last_day_of_month = now.replace(day=calendar.monthrange(now.year, now.month)[1])
+        first_day_of_month = now().replace(day=1)
+        last_day_of_month = now().replace(day=calendar.monthrange(now().year, now().month)[1])
 
         # Calculer le nombre de présences pour l'agent durant le mois en cours
         jours_presence = Presence.objects.filter(
@@ -118,8 +133,11 @@ def fichedepaie_add(request):
             date__range=(first_day_of_month, last_day_of_month)
         ).count()
 
-        # Calcul des heures supplémentaires
-        heures_supplementaires_total = HeureSupplementaire.objects.filter(agent=employe).aggregate(
+        # Calcul des heures supplémentaires pour le mois en cours
+        heures_supplementaires_total = HeureSupplementaire.objects.filter(
+            agent=employe,
+            date__range=(first_day_of_month, last_day_of_month)
+        ).aggregate(
             total_heures=Sum('nombre_heures')
         )['total_heures'] or 0
 
@@ -147,7 +165,7 @@ def fichedepaie_add(request):
             employe=employe,
             gestionnaire_paie=request.user,  # Associer le gestionnaire qui crée la fiche
             salaire_base=salaire_base,
-            salaire_base_retenu = salaire_base_retenu,
+            salaire_base_retenu=salaire_base_retenu,
             conges_payes=conges_payes,
             jour_maladie=jour_maladie,
             heures_supplementaires=heures_supplementaires_total,
@@ -175,6 +193,8 @@ def fichedepaie_add(request):
     return render(request, 'personnel/add_fiche.html', {'employes': employes})
 
 
+@login_required
+@user_passes_test(is_gestionnaire)
 def modifier_fichedepaie(request, fiche_id):
     # Récupérer la fiche de paie à modifier
     fiche = get_object_or_404(FichePaie, id=fiche_id)
@@ -202,8 +222,9 @@ def modifier_fichedepaie(request, fiche_id):
         employe = get_object_or_404(Utilisateur, id=employe_id)
 
         # Premier et dernier jour du mois en cours
-        first_day_of_month = now.replace(day=1)
-        last_day_of_month = now.replace(day=calendar.monthrange(now.year, now.month)[1])
+        current_now = now()  # Appel de la fonction now() pour obtenir l'heure actuelle
+        first_day_of_month = current_now.replace(day=1)
+        last_day_of_month = current_now.replace(day=calendar.monthrange(current_now.year, current_now.month)[1])
 
         # Calculer le nombre de présences pour l'agent durant le mois en cours
         jours_presence = Presence.objects.filter(
@@ -211,22 +232,26 @@ def modifier_fichedepaie(request, fiche_id):
             date__range=(first_day_of_month, last_day_of_month)
         ).count()
 
-        # Calcul des heures supplémentaires
-        heures_supplementaires_total = HeureSupplementaire.objects.filter(agent=employe).aggregate(
+        print(jours_presence)
+        # Calcul des heures supplémentaires pour le mois en cours
+        heures_supplementaires_total = HeureSupplementaire.objects.filter(
+            agent=employe,
+            date__range=(first_day_of_month, last_day_of_month)
+        ).aggregate(
             total_heures=Sum('nombre_heures')
-        )['total_heures'] or Decimal(0)
+        )['total_heures'] or 0
 
-        # Calcul du total brut : salaire_base * jours de présence + heures supplémentaires
+        # Calcul du total brut
         total_brut = (salaire_base * Decimal(jours_presence)) + (heures_supplementaires * heures_supplementaires_total)
         total_brut += jour_ferie_dimanche + prime_intensite + divers_remuneration
 
-        #Calcul salaire base retenu
+        # Calcul salaire base retenu
         salaire_base_retenu = salaire_base * jours_presence
 
         # Calcul du total des retenues
         total_retenues = cotisation_syndicale + autres_retenues + indemnites_logement + indemnites_transport
 
-        # Calcul du net à payer (total brut - retenues)
+        # Calcul du net à payer
         net_a_payer = total_brut - total_retenues
 
         # Calcul des allocations familiales
@@ -273,31 +298,343 @@ def modifier_fichedepaie(request, fiche_id):
     })
 
 
+@login_required
+@user_passes_test(is_gestionnaire)
 def fichedepaie_detail(request, fiche_id):
     fiche = get_object_or_404(FichePaie, id=fiche_id)
     return render(request, 'personnel/detail_fiche.html', {'fiche': fiche})
 
 
+@login_required
+@user_passes_test(is_gestionnaire)
 def print_fichedepaie(request, fiche_id):
     fiche = get_object_or_404(FichePaie, id=fiche_id)
     return render(request, 'personnel/print_fichedepaie.html', {'fiche': fiche})
 
 
+@login_required
+@user_passes_test(is_agent)
 def demande_credit(request):
-    return render(request, 'personnel/demande_credit.html')
+    if request.method == 'POST':
+        # Récupérer les données du formulaire
+        montant = request.POST.get('montant')
+        type_credit = request.POST.get('type_credit')
+        date_demande = request.POST.get('date')
+        commentaires = request.POST.get('comments')
+
+        # Validation simple pour s'assurer que tous les champs requis sont remplis
+        if montant and type_credit and date_demande:
+            # Créer une nouvelle demande de crédit
+            Credit.objects.create(
+                agent=request.user,
+                montant=montant,
+                type_credit=type_credit,
+                date=date_demande
+            )
+            messages.success(request, 'Votre demande de crédit a été soumise avec succès.')
+            return redirect('personnel:demande_credit')  # Rediriger vers la même page après la soumission
+        else:
+            messages.error(request, 'Veuillez remplir tous les champs requis.')
+
+    # Récupérer toutes les demandes de crédit pour l'agent connecté
+    demandes = Credit.objects.filter(agent=request.user).order_by('-date')[:5]
+
+    context = {
+        'demandes': demandes,
+        'today': timezone.now(),  # Passer la date du jour pour préremplir le champ date
+    }
+
+    return render(request, 'personnel/demande_credit.html', context)
 
 
+@login_required
+@user_passes_test(is_manager)
 def traiter_demande_credit(request):
-    return render(request, 'personnel/traiter_demande.html')
+    # Récupérer toutes les demandes
+    demandes = Credit.objects.all()
+
+    # Statistiques pour l'affichage
+    total_demandes = demandes.count()
+    montant_total = demandes.aggregate(Sum('montant'))['montant__sum'] or 0
+    montant_approuve = demandes.filter(statut='approuve').aggregate(Sum('montant'))['montant__sum'] or 0
+    montant_refuse = demandes.filter(statut='rejete').aggregate(Sum('montant'))['montant__sum'] or 0
+
+    context = {
+        'demandes': demandes,
+        'total_demandes': total_demandes,
+        'montant_total': montant_total,
+        'montant_approuve': montant_approuve,
+        'montant_refuse': montant_refuse,
+    }
+
+    return render(request, 'personnel/traiter_demande.html', context)
 
 
-def heure_supplementaire(request):
-    return render(request, 'personnel/heure_supplementaires.html')
+@login_required
+@user_passes_test(is_manager)
+def approuver_credit(request, id):
+    credit = get_object_or_404(Credit, id=id)
+    credit.statut = 'approuve'
+    credit.save()
+    messages.success(request, f'La demande de crédit pour {credit.agent.username} a été approuvée.')
+    return redirect('personnel:traiter_demande_credit')
 
 
+@login_required
+@user_passes_test(is_manager)
+def rejeter_credit(request, id):
+    credit = get_object_or_404(Credit, id=id)
+    credit.statut = 'rejete'
+    credit.save()
+    messages.error(request, f'La demande de crédit pour {credit.agent.username} a été rejetée.')
+    return redirect('personnel:traiter_demande_credit')
+
+
+@login_required
+@user_passes_test(is_manager)
+def voir_detail_credit(request, id):
+    demande = get_object_or_404(Credit, id=id)
+    return render(request, 'personnel/detail_credit.html', {'demande': demande})
+
+
+@login_required
+@user_passes_test(is_agent)
+def heures_supplementaires(request):
+    if request.method == 'POST':
+        # Récupération des données du formulaire
+        heures_travaillees = request.POST.get('hours-worked')
+        motif = request.POST.get('reason')
+
+        if heures_travaillees:
+            # Récupérer l'utilisateur connecté
+            utilisateur = request.user
+
+            # Obtenir l'année et le mois en cours
+            maintenant = now()
+            annee_courante = maintenant.year
+            mois_courant = maintenant.month
+
+            # Récupérer la fiche de paie du mois en cours pour l'utilisateur
+            try:
+                fiche_paie = FichePaie.objects.get(
+                    employe=utilisateur,
+                    date_creation__year=annee_courante,
+                    date_creation__month=mois_courant
+                )
+                print(f"Fiche de paie pour {utilisateur.username} trouvée pour le mois en cours.")
+            except FichePaie.DoesNotExist:
+                print(f"Aucune fiche de paie trouvée pour {utilisateur.username} ce mois-ci.")
+                fiche_paie = None
+
+            try:
+                # Création de l'enregistrement d'heures supplémentaires
+                heures_supp = HeureSupplementaire(
+                    agent=utilisateur,  # L'utilisateur connecté
+                    nombre_heures=heures_travaillees,
+                    fiche_paie=fiche_paie,  # La fiche de paie récupérée
+                    date=timezone.now(),
+                    motif=motif,
+                )
+                heures_supp.save()
+
+                messages.success(request, 'Heures supplémentaires ajoutées avec succès.')
+                return redirect('personnel:heure_supplementaire')
+            except Exception as e:
+                messages.error(request, f'Erreur lors de l\'ajout des heures supplémentaires: Nombre trop grand ')
+        else:
+            messages.error(request, 'Veuillez fournir le nombre d\'heures travaillées.')
+
+    # Affichage de la liste des heures supplémentaires
+    heures_list = HeureSupplementaire.objects.filter(agent=request.user).order_by('-date')[:5]
+
+    context = {
+        'heures_list': heures_list,
+    }
+    return render(request, 'personnel/heure_supplementaires.html', context)
+
+
+@login_required
+@user_passes_test(is_agent)
+def edit_overtime(request, heure_id):
+    # Récupérer l'instance des heures supplémentaires à modifier
+    heure_supp = get_object_or_404(HeureSupplementaire, id=heure_id)
+
+    if request.method == 'POST':
+        form = HeureSupplementaireForm(request.POST, instance=heure_supp)
+        print(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Heure supplémentaire modifiée avec succès.")
+            return redirect('personnel:heure_supplementaire')  # Rediriger vers la liste des heures supplémentaires
+    else:
+        form = HeureSupplementaireForm(instance=heure_supp)
+
+    return render(request, 'personnel/edit_overtime.html', {'form': form, 'heure_supp': heure_supp})
+
+
+@login_required
+@user_passes_test(is_agent)
+def delete_overtime(request, heure_id):
+    heure_supp = get_object_or_404(HeureSupplementaire, id=heure_id)
+
+    if request.method == 'POST':  # Vérification si une confirmation est faite via POST
+        heure_supp.delete()
+        messages.success(request, "Heure supplémentaire supprimée avec succès.")
+        return redirect('personnel:heure_supplementaire')  # Rediriger vers la liste des heures supplémentaires
+
+    return render(request, 'personnel/delete_overtime.html', {'heure_supp': heure_supp})
+
+
+@login_required
+@user_passes_test(is_gestionnaire)
 def rapport_presences(request):
-    return render(request, 'personnel/rapport_presence.html')
+    # Total des employés avec le rôle 'Agent'
+    total_employes = Utilisateur.objects.filter(role='Agent').count()
+
+    # Présences ce mois, filtrées par statut 'P'
+    presences_mois = Presence.objects.filter(date__month=now().month, statut='P')
+    total_presences = presences_mois.count()
+
+    # Absences ce mois, filtrées par statut 'A'
+    absences_mois = Presence.objects.filter(date__month=now().month, statut='A')
+    total_absences = absences_mois.count()
+
+    # Nombre de jours dans le mois en cours
+    month_days = calendar.monthrange(now().year, now().month)[1]
+
+    # Taux de présence et d'absence
+    taux_presence = (total_presences / (total_employes * month_days) * 100) if total_employes > 0 else 0
+    taux_absence = (total_absences / (total_employes * month_days) * 100) if total_employes > 0 else 0
+
+    # Obtenir les données de présence (jours travaillés et heures travaillées) par agent pour le mois en cours
+    details_presences = (
+        Presence.objects.filter(date__month=now().month)
+        .values('agent__id', 'agent__first_name', 'agent__last_name')
+        .annotate(
+            nombres_de_jours=Count('date'),
+            heures_travaillees=Sum('heures_travail')
+        )
+    )
+
+    # Obtenir les heures supplémentaires par agent pour le mois en cours
+    details_heures_supp = (
+        HeureSupplementaire.objects.filter(date__month=now().month)
+        .values('agent__id', 'agent__first_name', 'agent__last_name')
+        .annotate(
+            heures_supplementaires=Sum('nombre_heures')
+        )
+    )
+
+    # Créer un dictionnaire pour accéder aux heures supplémentaires par agent
+    heures_supp_dict = {
+        f"{hs['agent__first_name']} {hs['agent__last_name']}": hs['heures_supplementaires']
+        for hs in details_heures_supp
+    }
+
+    # Fusionner les deux ensembles de données
+    rapport = []
+    for presence in details_presences:
+        agent_name = f"{presence['agent__first_name']} {presence['agent__last_name']}"
+        heures_supplementaires = heures_supp_dict.get(agent_name,
+                                                      0)  # Récupérer les heures supplémentaires ou 0 si absent
+
+        rapport.append({
+            'employe': agent_name,
+            'jours': presence['nombres_de_jours'],
+            'heures_travaillees': presence['heures_travaillees'],
+            'heures_supplementaires': heures_supplementaires,
+            'agent_id': presence['agent__id'],
+        })
+
+    context = {
+        'total_employes': total_employes,
+        'taux_presence': taux_presence,
+        'taux_absence': taux_absence,
+        'rapport': rapport,
+    }
+
+    return render(request, 'personnel/rapport_presence.html', context)
 
 
+@login_required
+@user_passes_test(is_gestionnaire)
+def imprimer_rapport(request, agent_id):
+    # Récupérer les détails de l'agent
+    agent = get_object_or_404(Utilisateur, id=agent_id)
+
+    # Récupérer les présences journalières de l'agent pour le mois en cours
+    details_jours = Presence.objects.filter(agent=agent, date__month=now().month)
+
+    # Calculer le nombre de jours travaillés et les heures totales par agent pour le mois en cours
+    details_presences = (
+        Presence.objects.filter(agent=agent, date__month=now().month)  # Filtrer par agent et mois
+        .values('agent__id', 'agent__first_name', 'agent__last_name')  # Inclure agent__id
+        .annotate(
+            nombres_de_jours=Count('date'),  # Compter le nombre de jours de présence
+            heures_travaillees=Sum('heures_travail')  # Somme des heures travaillées
+        )
+    )
+
+    # Obtenir les heures supplémentaires de l'agent pour le mois en cours
+    details_heures_supp = (
+        HeureSupplementaire.objects.filter(agent=agent, date__month=now().month)
+        .values('date')  # Obtenir les dates d'heures supplémentaires
+        .annotate(
+            heures_supplementaires=Sum('nombre_heures')  # Somme des heures supplémentaires par date
+        )
+    )
+
+    # Créer un dictionnaire pour associer les heures supplémentaires à chaque jour
+    heures_supplementaires_dict = {supp['date']: supp['heures_supplementaires'] for supp in details_heures_supp}
+
+    # Préparer les données pour chaque jour
+    jours_avec_heures = []
+    for jour in details_jours:
+        jour_data = {
+            'date': jour.date,
+            'heures_travaillees': jour.heures_travail,
+            'heures_supplementaires': heures_supplementaires_dict.get(jour.date, 0)  # 0 si pas d'heures supp ce jour-là
+        }
+        jours_avec_heures.append(jour_data)
+
+    # Calcul des totaux (heures travaillées et supplémentaires)
+    heures_travaillees_totales = details_presences[0]['heures_travaillees'] if details_presences else 0
+    heures_supplementaires_totales = sum(heures_supplementaires_dict.values())
+
+    context = {
+        'agent': agent,
+        'nombres_de_jours': details_presences[0]['nombres_de_jours'] if details_presences else 0,
+        'heures_travaillees': heures_travaillees_totales,
+        'heures_supplementaires': heures_supplementaires_totales,
+        'details_jours': jours_avec_heures,  # Liste des jours avec heures travaillées et supp
+        'current_year': now().year,
+    }
+
+    # Charger le template PDF
+    template = get_template('personnel/rapport_pdf.html')
+    html = template.render(context)
+
+    # Générer le fichier PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="rapport_{agent.first_name}_{agent.last_name}.pdf"'
+
+    # Générer le PDF
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse('Erreur lors de la génération du PDF', status=500)
+
+    return response
+
+
+
+@login_required
+@user_passes_test(is_agent)
 def presence(request):
-    return render(request, 'personnel/presence.html')
+    # Récupérer les présences de l'utilisateur connecté
+    user_presences = Presence.objects.filter(agent=request.user).order_by('-date')  # Remplacez 'user' par le nom du champ d'utilisateur dans votre modèle
+
+    context = {
+        'user_presences': user_presences,
+    }
+    return render(request, 'personnel/presence.html', context)

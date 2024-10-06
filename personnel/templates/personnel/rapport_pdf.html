@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport de Présence</title>
+    <style>
+        /* Styles simples pour le PDF */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            font-size: 16px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            margin: 0 auto;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .details p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .details strong {
+            color: #2980b9;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #2c3e50;
+            color: white;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .table td {
+            font-size: 16px;
+        }
+
+        /* Footer style */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Rapport de Présence - {{ agent.first_name }} {{ agent.last_name }}</h2>
+
+    <div class="details">
+        <p><strong>Nom :</strong> {{ agent.first_name }} {{ agent.last_name }}</p>
+        <p><strong>Nombre de Jours Travaillés :</strong> {{ nombres_de_jours }}</p>
+        <p><strong>Heures Travaillées :</strong> {{ heures_travaillees }}</p>
+        <p><strong>Heures Supplémentaires Totales :</strong> {{ heures_supplementaires }}</p>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Jour</th>
+                <th>Heures Travaillées</th>
+                <th>Heures Supplémentaires</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for jour in details_jours %}
+            <tr>
+                <td>{{ jour.date|date:"d/m/Y" }}</td>
+                <td>{{ jour.heures_travaillees }}</td>
+                <td>{{ jour.heures_supplementaires }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">Aucune présence enregistrée ce mois.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="footer">
+    <p>&copy; {{ current_year }} Medpark Clinic | Rapport généré automatiquement.</p>
+</div>
+
+</body>
+</html>

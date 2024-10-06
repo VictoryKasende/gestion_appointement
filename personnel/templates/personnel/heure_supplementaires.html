@@ -1,17 +1,27 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %} Heure Supplementaire - Medpark Clinic{% endblock title %}
-{% block head_h1 %} Heures Supplémentaires{% endblock head_h1 %}
+{% block title %}Heure Supplémentaire - Medpark Clinic{% endblock title %}
+{% block head_h1 %}Heures Supplémentaires{% endblock head_h1 %}
 {% block lien_head %} <a class="active" href="#">Heures Supplémentaires</a> {% endblock %}
 
 {% block content %}
+    <div class="messages-container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message {{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
     <div class="main-content">
         <!-- FORMULAIRE D'HEURES SUPPLÉMENTAIRES -->
         <div class="form-container">
-            <form action="#" method="post">
+            <form action="{% url 'personnel:heure_supplementaire' %}" method="post">
+                {% csrf_token %}
 
                 <label for="hours-worked">Heures Travaillées</label>
-                <input type="number" id="hours-worked" name="hours-worked" required>
+                <input type="number" id="hours-worked" name="hours-worked" step="0.01" required>
 
                 <label for="reason">Motif</label>
                 <textarea id="reason" name="reason"></textarea>
@@ -24,41 +34,29 @@
             <h3>Liste des Heures Supplémentaires</h3>
             <table>
                 <thead>
-                <tr>
-                    <th>Heures Travaillées</th>
-                    <th>Date</th>
-                    <th>Motif</th>
-                    <th>Actions</th>
-                </tr>
+                    <tr>
+                        <th>Heures Travaillées</th>
+                        <th>Date</th>
+                        <th>Motif</th>
+                        <th>Actions</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td>5</td>
-                    <td>01-09-2024</td>
-                    <td>Travail supplémentaire pour projet X</td>
-                    <td>
-                        <a href="edit-overtime.html" class="btn-edit">Modifier</a>
-                        <a href="#" class="btn-delete">Supprimer</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>05-09-2024</td>
-                    <td>Heures supplémentaires pour réunion</td>
-                    <td>
-                        <a href="edit-overtime.html" class="btn-edit">Modifier</a>
-                        <a href="#" class="btn-delete">Supprimer</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>10-09-2024</td>
-                    <td>Heures de nuit pour maintenance</td>
-                    <td>
-                        <a href="edit-overtime.html" class="btn-edit">Modifier</a>
-                        <a href="#" class="btn-delete">Supprimer</a>
-                    </td>
-                </tr>
+                    {% for heure in heures_list %}
+                        <tr>
+                            <td>{{ heure.nombre_heures }}</td>
+                            <td>{{ heure.date|date:"d-m-Y" }}</td>
+                            <td>{{ heure.motif|default_if_none:"Aucun motif" }}</td>
+                            <td>
+                                <a href="{% url 'personnel:edit_overtime' heure.id %}" class="btn-edit">Modifier</a>
+                                <a href="{% url 'personnel:delete_overtime' heure.id %}" class="btn-delete">Supprimer</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">Aucune heure supplémentaire enregistrée pour le moment.</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

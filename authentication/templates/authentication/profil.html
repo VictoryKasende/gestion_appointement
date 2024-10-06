@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %} Profil Utilisateur - Medpark Clinic{% endblock title %}
+{% block title %} Profil Utilisateur - Notariat{% endblock title %}
 {% block head_h1 %} Profil Utilisateur {% endblock head_h1 %}
 {% block lien_head %} <a class="active" href="#">Profil Utilisateur</a> {% endblock %}
 
@@ -10,12 +10,12 @@
         <div class="profile-container">
             <h3>Informations du Profil</h3>
             <div class="profile-header">
-                <img src="{% static 'personnel/assets/images/profil_defaut.png' %}" alt="Photo de Profil"
+                <img src="{% if user.profile_photo %}{{ user.profile_photo.url }}{% else %}{% static 'personnel/assets/images/profil_defaut.png' %}{% endif %}" alt="Photo de Profil"
                      class="profile-pic">
                 <div class="profile-info">
-                    <h4>Vivianne</h4>
-                    <p>Agent</p>
-                    <p>Matricule : UB300</p>
+                    <h4>{{ user.get_full_name }}</h4> <!-- Affiche le nom complet de l'utilisateur -->
+                    <p>{{ user.role }}</p> <!-- Affiche le rôle de l'utilisateur -->
+                    <p>Matricule : {{ user.matricule|default_if_none:'Aucun' }}</p>
                 </div>
             </div>
             <table class="profile-details">
@@ -27,19 +27,19 @@
                 <tbody>
                 <tr>
                     <td>Email:</td>
-                    <td>umbalo@gmail.com</td>
+                    <td>{{ user.email }}</td>
                 </tr>
                 <tr>
                     <td>Téléphone:</td>
-                    <td>998554044</td>
+                    <td>{{ user.telephone }}</td>
                 </tr>
                 <tr>
                     <td>Adresse:</td>
-                    <td>123 du Carmel, 300</td>
+                    <td>{{ user.adresse }}</td> <!-- Si vous avez un champ d'adresse dans votre modèle -->
                 </tr>
                 <tr>
                     <td>Date d'Embauche:</td>
-                    <td>01-09-2024</td>
+                    <td>{{ user.date_entree|date:"d-m-Y" }}</td> <!-- Formatez la date d'entrée -->
                 </tr>
                 </tbody>
             </table>

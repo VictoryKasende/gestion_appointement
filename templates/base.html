@@ -12,7 +12,66 @@
 
     <link href={% static "personnel/assets/images/logo.png" %} rel="icon">
     <title>{% block title %}{% endblock title %}</title>
+    <style>
+        .messages-container {
+            position: relative;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
+        }
 
+        .messages-container ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .messages-container .message {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .message.success {
+            background-color: #4CAF50; /* Vert pour succès */
+        }
+
+        .message.error {
+            background-color: #F44336; /* Rouge pour erreur */
+        }
+
+        .message.warning {
+            background-color: #FFC107; /* Jaune pour avertissement */
+            color: #333;
+        }
+
+        .message.info {
+            background-color: #2196F3; /* Bleu pour information */
+        }
+
+        .message.success:before {
+            content: "✔ ";
+        }
+
+        .message.error:before {
+            content: "✘ ";
+        }
+
+        .message.warning:before {
+            content: "⚠ ";
+        }
+
+        .message.info:before {
+            content: "ℹ ";
+        }
+
+    </style>
 </head>
 <body>
 {% include 'personnel/sliderbar.html' %}
@@ -28,15 +87,15 @@
                     </li>
                     <li><i class='bx bx-chevron-right'></i></li>
                     <li>
-                       {% block lien_head %}{% endblock lien_head %}
+                        {% block lien_head %}{% endblock lien_head %}
                     </li>
                 </ul>
             </div>
-        
+
             {% block lien_droit %} {% endblock lien_droit %}
-            
+
         </div>
-        
+
         {% block content %}{% endblock content %}
     </main>
 </section>

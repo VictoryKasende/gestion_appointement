@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Détails de la Demande de Crédit - Notariat{% endblock title %}
+{% block head_h1 %} Détails de la Demande de Crédit {% endblock head_h1 %}
+{% block lien_head %} <a class="active" href="#">Détails de la Demande de Crédit</a> {% endblock %}
+
+{% block content %}
+    <div class="main-content">
+        <!-- FICHE DE DÉTAILS DE CRÉDIT -->
+        <div class="profile-container">
+            <h3>Détails de la Demande de Crédit</h3>
+            <div class="profile-header">
+                <p>Statut: <span style="color: {% if demande.statut == 'approuve' %}#1ba1db{% elif demande.statut == 'rejete' %}#DB504A{% else %}#FFCE26{% endif %}; display: block">{{ demande.get_statut_display }}</span></p>
+            </div>
+            <table class="profile-details">
+                <thead>
+                <tr>
+                    <th colspan="2">Détails du Crédit</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Utilisateur:</td>
+                    <td>{{ demande.agent.username }}</td>
+                </tr>
+                <tr>
+                    <td>Montant:</td>
+                    <td>{{ demande.montant }}</td>
+                </tr>
+                <tr>
+                    <td>Date:</td>
+                    <td>{{ demande.date|date:'d-m-Y' }}</td>
+                </tr>
+                <tr>
+                    <td>Type de Crédit:</td>
+                    <td>{{ demande.get_type_credit_display }}</td>
+                </tr>
+                <tr>
+                    <td>Commentaires:</td>
+                    <td>
+                        {% if demande.commentaire %}
+                            {{ demande.commentaire }}
+                        {% else %}
+                            Aucun commentaire
+                        {% endif %}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{% url 'personnel:traiter_demande_credit' %}" style="padding: 10px 20px; background-color: #1ba1db; color: white; text-decoration: none; border-radius: 4px;">Retour à la Liste</a>
+            </div>
+        </div>
+        <!-- FICHE DE DÉTAILS DE CRÉDIT -->
+    </div>
+{% endblock content %}

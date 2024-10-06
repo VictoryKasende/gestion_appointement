@@ -5,10 +5,20 @@
 {% block lien_head %} <a class="active" href="#">Demande de Crédit</a> {% endblock %}
 
 {% block content %}
+    <div class="messages-container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message {{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
     <div class="main-content">
         <!-- FORMULAIRE DE DEMANDE -->
         <div class="form-container">
             <form action="" method="post">
+                {% csrf_token %}  <!-- Protection contre les attaques CSRF -->
 
                 <label for="montant">Montant Demandé</label>
                 <input type="number" id="montant" name="montant" step="0.01" required>
@@ -31,38 +41,39 @@
             </form>
         </div>
 
-
         <!-- LISTE DES DEMANDES -->
         <div class="requests-list">
             <h3>Liste des Demandes</h3>
             <table>
                 <thead>
                 <tr>
-                    <th>Utilisateur</th>
                     <th>Montant Demandé</th>
                     <th>Date de Demande</th>
+                    <th>Type de Crédit</th>
                     <th>Status</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td>Vivianne</td>
-                    <td>$20,000</td>
-                    <td>01-09-2024</td>
-                    <td><span class="status completed">Approuvé</span></td>
-                </tr>
-                <tr>
-                    <td>Deborah</td>
-                    <td>$15,000</td>
-                    <td>05-09-2024</td>
-                    <td><span class="status pending">En Attente</span></td>
-                </tr>
-                <tr>
-                    <td>Abi</td>
-                    <td>$30,000</td>
-                    <td>10-09-2024</td>
-                    <td><span class="status process">En Traitement</span></td>
-                </tr>
+                {% for demande in demandes %}
+                    <tr>
+                        <td>${{ demande.montant }}</td>
+                        <td>{{ demande.date|date:'d-m-Y' }}</td>
+                        <td>{{ demande.get_type_credit_display }}</td>
+                        <td>
+                            {% if demande.statut == 'en attente' %}
+                                <span class="status pending">En Attente</span>
+                            {% elif demande.statut == 'rejete' %}
+                                <span class="status process">Rejeté</span>
+                            {% elif demande.statut == 'approuve' %}
+                                <span class="status completed">Approuvé</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4">Aucune demande soumise pour le moment.</td>
+                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>

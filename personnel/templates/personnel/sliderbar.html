@@ -5,10 +5,31 @@
         <span class="text">Medpark Clinic</span>
     </a>
     <ul class="side-menu top">
-        <li class="active">
-            <a href="{% url 'personnel:remuneration' %}">
-                <i class='bx bxs-wallet'></i>
-                <span class="text">Rémuneration</span>
+        {% if request.user.role == 'Gestionnaire Paie' %}
+            <li class="active">
+                <a href="{% url 'personnel:remuneration' %}">
+                    <i class='bx bxs-wallet'></i>
+                    <span class="text">Rémuneration</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'personnel:rapport_presences' %}">
+                    <i class='bx bxs-calendar-check'></i>
+                    <span class="text">Rapport Présence</span>
+                </a>
+            </li>
+        {% elif request.user.role == 'Manager' %}
+        <li>
+            <a href="{% url 'personnel:traiter_demande_credit' %}">
+                <i class='bx bxs-edit-alt'></i>
+                <span class="text">Traiter demande</span>
+            </a>
+        </li>
+        {% elif request.user.role == 'Agent' %}
+        <li>
+            <a href="{% url 'personnel:presence' %}">
+                <i class='bx bxs-check-circle'></i>
+                <span class="text">Présence</span>
             </a>
         </li>
         <li>
@@ -18,29 +39,12 @@
             </a>
         </li>
         <li>
-            <a href="{% url 'personnel:traiter_demande_credit' %}">
-                <i class='bx bxs-edit-alt'></i>
-                <span class="text">Traiter demande</span>
-            </a>
-        </li>
-        <li>
-            <a href="{% url 'personnel:presence' %}">
-                <i class='bx bxs-check-circle'></i>
-                <span class="text">Présence</span>
-            </a>
-        </li>
-        <li>
             <a href="{% url 'personnel:heure_supplementaire' %}">
                 <i class='bx bxs-time-five'></i>
                 <span class="text">Heure Supplementaire</span>
             </a>
         </li>
-        <li>
-            <a href="{% url 'personnel:rapport_presences' %}">
-                <i class='bx bxs-calendar-check'></i>
-                <span class="text">Rapport Présence</span>
-            </a>
-        </li>
+        {% endif %}
     </ul>
     <ul class="side-menu">
         <li>

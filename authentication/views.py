@@ -15,29 +15,20 @@ class CustomLoginView(LoginView):
         if user.is_superuser:
             return reverse('admin:index')
         elif user.role == 'Manager':
-            return reverse('personnel:remuneration')
+            return reverse('personnel:traiter_demande_credit')
         elif user.role == 'Administrateur IT':
             return reverse('admin:index')
         elif user.role == 'Gestionnaire Paie':
             return reverse('personnel:remuneration')
         elif user.role == 'Agent':
-            pass
+            return reverse('personnel:presence')
         return super().get_success_url()
 
 
 @login_required
 def profil(request):
-    user = request.user
-
-    if request.method == 'POST':
-        form = ProfilForm(request.POST, request.FILES, instance=user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Votre profil a été mis à jour avec succès.")
-            return redirect('profil')
-        else:
-            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
-    else:
-        form = ProfilForm(instance=user)
-
-    return render(request, 'authentication/profil.html', {'form': form})
+    user = request.user  # Récupérer l'utilisateur connecté
+    context = {
+        'user': user  # Passez l'utilisateur au contexte
+    }
+    return render(request, 'authentication/profil.html', context)

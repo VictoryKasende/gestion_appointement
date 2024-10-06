@@ -5,112 +5,128 @@
 {% block lien_head %} <a class="active" href="#">Traiter Demande de Crédit</a> {% endblock %}
 
 {% block content %}
-    <ul class="box-info">
-                <!-- Total des demandes -->
-                <li>
-                    <i class='bx bxs-file-plus'></i>
-                    <span class="text">
-                        <h3>120</h3> <!-- Exemple : nombre total de demandes -->
-                        <p>Total Demandes</p>
-                    </span>
-                </li>
-
-                <!-- Montant total demandé -->
-                <li>
-                    <i class='bx bxs-dollar-circle'></i>
-                    <span class="text">
-                        <h3>$500,000</h3> <!-- Exemple : montant total demandé -->
-                        <p>Montant Total</p>
-                    </span>
-                </li>
-
-                <!-- Montant approuvé -->
-                <li>
-                    <i class='bx bxs-check-circle'></i>
-                    <span class="text">
-                        <h3>$350,000</h3> <!-- Exemple : montant approuvé -->
-                        <p>Montant Approuvé</p>
-                    </span>
-                </li>
-
-                <!-- Montant refusé -->
-                <li>
-                    <i class='bx bxs-x-circle'></i>
-                    <span class="text">
-                        <h3>$150,000</h3> <!-- Exemple : montant refusé -->
-                        <p>Montant Refusé</p>
-                    </span>
-                </li>
+    <div class="messages-container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message {{ message.tags }}">{{ message }}</li>
+                {% endfor %}
             </ul>
+        {% endif %}
+    </div>
+    <ul class="box-info">
+        <!-- Total des demandes -->
+        <li>
+            <i class='bx bxs-file-plus'></i>
+            <span class="text">
+                <h3>{{ total_demandes }}</h3>
+                <p>Total Demandes</p>
+            </span>
+        </li>
 
-            <div class="table-data">
-                <div class="order">
-                    <div class="head">
-                        <h3>Détails des Demandes</h3>
-                        <i class='bx bx-search'></i>
-                        <i class='bx bx-filter'></i>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Utilisateur</th>
-                                <th>Montant Demandé</th>
-                                <th>Date de Demande</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <img src="{% static 'personnel/assets/images/profil_defaut.png' %}">
-                                    <p>Victoire</p>
-                                </td>
-                                <td>$20,000</td>
-                                <td>01-09-2024</td>
-                                <td>
-                                    <span class="status completed">Approuvé</span>
-                                </td>
-                                <td>
-                                    <button>Voir Détail</button>
-                                    <button>Approuvé</button>
-                                    <button>Refusé</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="{% static 'personnel/assets/images/profil_defaut.png' %}">
-                                    <p>Vivianne</p>
-                                </td>
-                                <td>$15,000</td>
-                                <td>05-09-2024</td>
-                                <td>
-                                    <span class="status pending">En Attente</span>
-                                </td>
-                                <td>
-                                    <button>Voir Détail</button>
-                                    <button>Approuvé</button>
-                                    <button>Refusé</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="{% static 'personnel/assets/images/profil_defaut.png' %}">
-                                    <p>Michael</p>
-                                </td>
-                                <td>$30,000</td>
-                                <td>10-09-2024</td>
-                                <td>
-                                    <span class="status process">En Traitement</span>
-                                </td>
-                                <td>
-                                    <button>Voir Détail</button>
-                                    <button>Approuvé</button>
-                                    <button>Refusé</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <!-- Montant total demandé -->
+        <li>
+            <i class='bx bxs-dollar-circle'></i>
+            <span class="text">
+                <h3>${{ montant_total }}</h3>
+                <p>Montant Total</p>
+            </span>
+        </li>
+
+        <!-- Montant approuvé -->
+        <li>
+            <i class='bx bxs-check-circle'></i>
+            <span class="text">
+                <h3>${{ montant_approuve }}</h3>
+                <p>Montant Approuvé</p>
+            </span>
+        </li>
+
+        <!-- Montant refusé -->
+        <li>
+            <i class='bx bxs-x-circle'></i>
+            <span class="text">
+                <h3>${{ montant_refuse }}</h3>
+                <p>Montant Refusé</p>
+            </span>
+        </li>
+    </ul>
+
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Détails des Demandes</h3>
+                <i class='bx bx-search'></i>
+                <i class='bx bx-filter'></i>
             </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Montant Demandé</th>
+                    <th>Date de Demande</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for demande in demandes %}
+                    <tr>
+                        <td>
+                            {% if demande.agent.profile_photo %}
+                                <img src="{{ demande.agent.profile_photo.url }}" alt="Employé">
+                            {% else %}
+                                <img src="{% static 'personnel/assets/images/profil_defaut.png' %}" alt="Employé">
+                            {% endif %}
+                            <p>{{ demande.agent.username }}</p>
+                        </td>
+                        <td>${{ demande.montant }}</td>
+                        <td>{{ demande.date|date:'d-m-Y' }}</td>
+                        <td>
+                            <span class="status {% if demande.statut == 'approuve' %}completed{% elif demande.statut == 'rejete' %}pending{% else %}pending{% endif %}">
+                                {{ demande.get_statut_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 10px;">
+                                <!-- Formulaire pour Voir Détail -->
+                                <form method="get" action="{% url 'personnel:voir_detail_credit' demande.id %}"
+                                      style="display: inline-block;">
+                                    <button type="submit"
+                                            style="padding: 5px 10px; cursor: pointer; background-color: #1ba1db; color: white;">
+                                        Voir Détail
+                                    </button>
+                                </form>
+
+                                <!-- Formulaire pour Approuver -->
+                                <form method="post" action="{% url 'personnel:approuver_credit' demande.id %}"
+                                      style="display: inline-block;">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            style="padding: 5px 10px; cursor: pointer; background-color: #FD7238; color: white;">
+                                        Approuver
+                                    </button>
+                                </form>
+
+                                <!-- Formulaire pour Refuser -->
+                                <form method="post" action="{% url 'personnel:rejeter_credit' demande.id %}"
+                                      style="display: inline-block;">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            style="padding: 5px 10px; cursor: pointer; background-color: #DB504A; color: white;">
+                                        Refuser
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">Aucune demande trouvée.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock content %}

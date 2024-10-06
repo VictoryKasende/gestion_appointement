@@ -9,6 +9,7 @@
         <span class="text">Créer un contrat</span>
     </a>
 {% endblock lien_droit %}
+
 {% block content %}
     <div class="messages-container">
         {% if messages %}
@@ -19,6 +20,7 @@
             </ul>
         {% endif %}
     </div>
+
     <ul class="box-info">
         <!-- Total des agents -->
         <li>
@@ -92,38 +94,32 @@
                 {% for fiche in fiches_paie %}
                     <tr>
                         <td>
-                            {% if fiche.presence.agent.profile_photo %}
-                                <img src="{{ fiche.presence.agent.profile_photo.url }}" alt="Employé">
+                            {% if fiche.employe.profile_photo %}
+                                <img src="{{ fiche.employe.profile_photo.url }}" alt="Employé">
                             {% else %}
                                 <img src="{% static 'personnel/assets/images/profil_defaut.png' %}" alt="Employé">
                             {% endif %}
-                            <p>{{ fiche.presence.agent.username }}</p>
+                            <p>{{ fiche.employe.username }}</p>
                         </td>
-                        <td>{{ fiche.presence.agent.matricule }}</td>
+                        <td>{{ fiche.employe.matricule }}</td>
                         <td>{{ fiche.heures_travail|stringformat:"0.2f" }} heures</td>
                         <td>{{ fiche.nombre_jours }} jours</td>
-                        <td>{{ fiche.presence.fiche_paie.salaire_base|stringformat:"0.2f" }}$</td>
-                        <td>{{ fiche.presence.fiche_paie.salaire_base_retenu|stringformat:"0.2f" }}$</td>
-                        <td>{{ fiche.presence.fiche_paie.indemnites_logement|stringformat:"0.2f" }}$</td>
-                        <td>{{ fiche.presence.fiche_paie.indemnites_transport|stringformat:"0.2f" }}$</td>
-                        <td>{{ fiche.presence.fiche_paie.net_a_payer|stringformat:"0.2f" }}$</td>
+                        <td>{{ fiche.salaire_base|stringformat:"0.2f" }}$</td>
+                        <td>{{ fiche.salaire_base_retenu|stringformat:"0.2f" }}$</td>
+                        <td>{{ fiche.indemnites_logement|stringformat:"0.2f" }}$</td>
+                        <td>{{ fiche.indemnites_transport|stringformat:"0.2f" }}$</td>
+                        <td>{{ fiche.net_a_payer|stringformat:"0.2f" }}$</td>
                         <td>
-                            {% if fiche.presence.fiche_paie %}
-                                <a href="{% url 'personnel:fichedepaie_detail' fiche.presence.fiche_paie.id %}"
-                                   id="voir">
-                                    <button>Voir</button>
-                                </a>
-                                <a href="{% url 'personnel:modifier_fichedepaie' fiche.presence.fiche_paie.id %}">
-                                    <button style="background-color: var(--orange)">Modifier</button>
-                                </a>
-                                <a href="{% url 'personnel:print_fichedepaie' fiche.presence.fiche_paie.id %}">
-                                    <button style="background-color: var(--yellow)">Imprimer</button>
-                                </a>
-                            {% else %}
-                                <p>Aucune fiche de paie disponible</p>
-                            {% endif %}
+                            <a href="{% url 'personnel:fichedepaie_detail' fiche.id %}" id="voir">
+                                <button>Voir</button>
+                            </a>
+                            <a href="{% url 'personnel:modifier_fichedepaie' fiche.id %}">
+                                <button style="background-color: var(--orange)">Modifier</button>
+                            </a>
+                            <a href="{% url 'personnel:print_fichedepaie' fiche.id %}">
+                                <button style="background-color: var(--yellow)">Imprimer</button>
+                            </a>
                         </td>
-
                     </tr>
                 {% endfor %}
                 </tbody>
